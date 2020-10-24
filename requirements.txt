@@ -1,0 +1,8 @@
+Django>=2.2,<3.0
+djoser
+jsonschema>=3.2,<3.3
+psycopg2>=2.8,<2.9
+djangorestframework>=3.10.0,<3.11.0
+djangorestframework_simplejwt
+django-environ
+black

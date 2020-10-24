@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:12
+    env_file: .env
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c 'python manage.py runserver 0.0.0.0:8000; python manage.py migrate'
+    env_file: .env
+    ports:
+      - "8080:8000"
+    volumes:
+      - .:/code
+      - ./static:/static
+    depends_on:
+      - db
