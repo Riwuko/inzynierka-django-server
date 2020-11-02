@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   db:
@@ -12,7 +12,7 @@ services:
     command: bash -c 'python manage.py runserver 0.0.0.0:8000; python manage.py migrate'
     env_file: .env
     ports:
-      - "8080:8000"
+      - "8000:8000"
     volumes:
       - .:/code
       - ./static:/static
