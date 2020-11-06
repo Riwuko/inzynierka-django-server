@@ -10,7 +10,7 @@ In folder with docker-compose.yml run the following commands: <br>
 
 ### Available endpoints
 
-**User accounts management:** 
+**User accounts management:** <br>
 `/api/auth/users/` user list and create view <br>
 `/api/auth/users/me/` currently logged-in user's detail <br>
 `/api/auth/users/<id>/` chosen user detail <br>
