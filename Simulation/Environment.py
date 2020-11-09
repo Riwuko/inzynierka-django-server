@@ -3,10 +3,10 @@ class Environment:
         self.temperature = init_temperature
         self.humidity = init_humidity
         self.brightness = init_brightness
-        self.heater_state = "off"
-        self.blinds_state = "up"
-        self.light_state = "off"
-        self.air_conditioning_state = "off"
+        self.heater_state = False
+        self.blinds_state = False
+        self.light_state = False
+        self.air_conditioning_state = False
         self.max_temperature = 35  # depends on heater's power
         self.min_temperature = 15
         self.max_humidity = 70
@@ -14,16 +14,16 @@ class Environment:
         self.slow = 1000000
 
     def turn_on_heater(self):
-        self.heater_state = "on"
+        self.heater_state = True
 
     def turn_off_heater(self):
-        self.heater_state = "off"
+        self.heater_state = False
 
     def turn_on_air_conditioning(self):
-        self.air_conditioning_state = "on"
+        self.air_conditioning_state = True
 
     def turn_off_air_conditioning(self):
-        self.air_conditioning_state = "off"
+        self.air_conditioning_state = False
 
     def get_temperature(self):
         return self.temperature
@@ -36,14 +36,14 @@ class Environment:
         self.involve_air_conditioning(delta_time)
 
     def involve_heater(self, delta_time):
-        if self.heater_state == "on":
+        if self.heater_state:
             self.temperature += (self.max_temperature - self.temperature) * delta_time / self.slow
         else:
             self.temperature -= (self.temperature - self.min_temperature) * delta_time / self.slow
         self.limit_temperature()
 
     def involve_air_conditioning(self, delta_time):
-        if self.air_conditioning_state == "on":
+        if self.air_conditioning_state:
             self.temperature -= (self.temperature - self.min_temperature) * delta_time / self.slow
             self.humidity -= self.humidity * delta_time / self.slow
         else:
