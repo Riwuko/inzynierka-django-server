@@ -28,6 +28,10 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG", default=False)
 
 ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(",")
+CROSS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 
 # Application definition
@@ -42,18 +46,21 @@ INSTALLED_APPS = [
     "rest_framework",
     "djoser",
     "users",
+    'corsheaders'
 ]
 
 AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
+    'django.middleware.common.CommonMiddleware',  
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware"
 ]
 
 ROOT_URLCONF = "server_config.urls"
@@ -160,6 +167,6 @@ SIMPLE_JWT = {
     "SIGNING_KEY": env("REFRESH_TOKEN_SECRET"),
     "AUTH_HEADER_TYPES": (
         "Bearer",
-        "JWT",
+        "Token"
     ),
 }

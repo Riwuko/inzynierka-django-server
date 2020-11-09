@@ -7,3 +7,4 @@ djangorestframework_simplejwt
 djoser
 django-environ
 black
+django-cors-headers
