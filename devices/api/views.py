@@ -93,7 +93,7 @@ class SceneViewSet(viewsets.ReadOnlyModelViewSet):
     list_serializer_class = SceneListSerializer
 
     def get_queryset(self):
-        return Sself.queryset.filter(building__user=self.request.user)
+        return self.queryset.filter(building__user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "list":

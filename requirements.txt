@@ -8,3 +8,5 @@ djoser
 django-environ
 black
 django-cors-headers
+graphene-django
+django-graphql-jwt

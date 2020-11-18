@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "users",
     "devices",
     "corsheaders",
+    "graphene_django",
+    "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
 ]
 
 AUTH_USER_MODEL = "users.User"
@@ -167,3 +169,22 @@ SIMPLE_JWT = {
     "SIGNING_KEY": env("REFRESH_TOKEN_SECRET"),
     "AUTH_HEADER_TYPES": ("Bearer", "Token"),
 }
+
+GRAPHENE = {
+    "SCHEMA": "server_config.schema.schema",
+    "MIDDLEWARE": [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware",
+    ],
+}
+
+GRAPHQL_JWT = {
+    "JWT_ALLOW_ARGUMENT": True,
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_EXPIRATION_DELTA": datetime.timedelta(days=1),
+    "JWT_REFRESH_EXPIRATION_DELTA": datetime.timedelta(days=365),
+}
+
+AUTHENTICATION_BACKENDS = (
+    "graphql_jwt.backends.JSONWebTokenBackend",
+    "django.contrib.auth.backends.ModelBackend",
+)
