@@ -4,12 +4,13 @@ services:
   db:
     image: postgres:12
     env_file: .env
-
+  redis:
+    image: "redis:alpine"
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    command: bash -c 'python manage.py runserver 0.0.0.0:8000; python manage.py migrate'
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     env_file: .env
     ports:
       - "8000:8000"
@@ -18,3 +19,19 @@ services:
       - ./static:/static
     depends_on:
       - db
+  celery:
+    build: .
+    command: celery -A server_config worker -l INFO
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+  celery-beat:
+    build: .
+    command: celery -A server_config beat -l info
+    env_file: .env
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - redis

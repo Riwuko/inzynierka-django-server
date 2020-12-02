@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+from celery.schedules import crontab
 from pathlib import Path
 import os
 import datetime
@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "devices",
     "corsheaders",
     "graphene_django",
-    "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
+    "django_celery_beat",
 ]
 
 AUTH_USER_MODEL = "users.User"
@@ -188,3 +188,19 @@ AUTHENTICATION_BACKENDS = (
     "graphql_jwt.backends.JSONWebTokenBackend",
     "django.contrib.auth.backends.ModelBackend",
 )
+
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_IMPORTS = ["devices.tasks"]
+
+CELERY_BEAT_SCHEDULE = {
+    "check_temperature": {
+        "task": "devices.tasks.check_temperature",
+        # "schedule": crontab(minute=0, hour="*/2"),  # co 2 godziny
+        "schedule": crontab(),  # co minutę
+    },
+}

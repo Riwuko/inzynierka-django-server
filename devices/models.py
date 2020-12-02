@@ -5,9 +5,7 @@ from users.models import User
 
 class Building(models.Model):
     name = models.CharField(max_length=100, null=True)
-    user = models.ForeignKey(
-        User, related_name="user_buildings", null=True, on_delete=models.SET_NULL
-    )
+    user = models.ForeignKey(User, related_name="user_buildings", null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f"Building: {str(self.id)} | name: {self.name}"
@@ -18,6 +16,7 @@ class Room(models.Model):
     building = models.ForeignKey(
         Building, related_name="building_rooms", null=False, on_delete=models.CASCADE
     )
+    icon = models.CharField(max_length=300, null=True)
 
     def __str__(self):
         return f"Room: {str(self.id)} | name: {self.name}"
@@ -28,6 +27,7 @@ class Scene(models.Model):
     building = models.ForeignKey(
         Building, related_name="building_scenes", null=False, on_delete=models.CASCADE
     )
+    icon = models.CharField(max_length=300, null=True)
 
     def __str__(self):
         return f"Scene: {str(self.id)} | name: {self.name}"
@@ -55,10 +55,8 @@ class Device(models.Model):
         null=True,
         on_delete=models.SET_NULL,
     )
-    room = models.ForeignKey(
-        Room, related_name="room_devices", null=True, on_delete=models.SET_NULL
-    )
-    scenes = models.ManyToManyField(Scene, related_name="scene_devices")
+    room = models.ForeignKey(Room, related_name="room_devices", null=True, on_delete=models.SET_NULL)
+    scenes = models.ManyToManyField(Scene, related_name="scene_devices", blank=True)
     building = models.ForeignKey(
         Building, related_name="building_devices", null=False, on_delete=models.CASCADE
     )
