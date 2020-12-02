@@ -6,7 +6,10 @@ djangorestframework>=3.10.0,<3.11.0
 djangorestframework_simplejwt
 djoser
 django-environ
-black
 django-cors-headers
 graphene-django
 django-graphql-jwt
+django-celery-beat
+celery>=5.0.0
+redis
+pillow
