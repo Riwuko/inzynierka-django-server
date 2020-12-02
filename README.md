@@ -34,7 +34,7 @@ User can see only his building and it's parts (rooms, scenes, devices etc) <br>
 <br>
 
 **Graphql endpoint:**<br>
-The graphql endpoint is also available.
+The graphql endpoint is also available.<br>
 `/graphql/` accessible queries are analogous to devices endpoints <br>
 
 ### How can you add to database
