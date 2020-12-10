@@ -8,6 +8,7 @@ from devices.api.views import (
     MeasurementViewSet,
     RoomViewSet,
     SceneViewSet,
+    SceneDevicesView,
 )
 
 app_name = "devices"
@@ -22,4 +23,5 @@ router.register(r"measurements", MeasurementViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("scenes/<int:pk>/devices/", SceneDevicesView.as_view(), name="scene-devices"),
 ]
