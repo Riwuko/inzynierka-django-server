@@ -58,7 +58,7 @@ class Query(graphene.ObjectType):
     rooms = graphene.List(RoomType,  token=graphene.String(required=True))
     room = graphene.Field(RoomType, id=graphene.Int(),  token=graphene.String(required=True))
 
-    scenes = graphene.List(SceneType, token=graphene.String(required=True),  token=graphene.String(required=True))
+    scenes = graphene.List(SceneType, token=graphene.String(required=True))
     scene = graphene.Field(SceneType, id=graphene.Int(),  token=graphene.String(required=True))
 
     users = graphene.List(UserType, token=graphene.String(required=True))
