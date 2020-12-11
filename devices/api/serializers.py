@@ -1,4 +1,4 @@
-from devices.models import Building, Device, MeasuringDevice, Measurement, Room, Scene
+from devices.models import Building, Device, MeasuringDevice, Measurement, Room, Scene, SceneDeviceState
 from rest_framework import serializers
 
 
@@ -64,4 +64,16 @@ class BuildingSerializer(serializers.ModelSerializer):
 class BuildingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building
+        fields = "__all__"
+
+
+class SceneDeviceStatePostSerializer(serializers.Serializer):
+    scene_id = serializers.IntegerField(required=False)
+    device_id = serializers.IntegerField()
+    state = serializers.BooleanField()
+
+
+class SceneDeviceStateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SceneDeviceState
         fields = "__all__"
