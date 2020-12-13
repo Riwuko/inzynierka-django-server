@@ -8,6 +8,10 @@ class DeviceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class DeviceStateUpdateSerializer(serializers.Serializer):
+    state = serializers.BooleanField()
+
+
 class MeasuringDeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeasuringDevice
@@ -36,19 +40,29 @@ class RoomListSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class SceneDeviceStateSerializer(serializers.Serializer):
+    device_id = serializers.IntegerField()
+    state = serializers.BooleanField()
+
+
 class SceneSerializer(serializers.ModelSerializer):
-    scene_devices = DeviceSerializer(many=True, read_only=True)
+    scene_devices_states = SceneDeviceStateSerializer(many=True, read_only=True)
 
     class Meta:
         model = Scene
         fields = "__all__"
-        extra_fields = ["scene_devices"]
+        extra_fields = ["scene_devices_states"]
 
 
 class SceneListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scene
         fields = "__all__"
+
+
+class ScenePostSerializer(serializers.Serializer):
+    scene = SceneSerializer
+    devices = SceneDeviceStateSerializer(many=True)
 
 
 class BuildingSerializer(serializers.ModelSerializer):
@@ -64,16 +78,4 @@ class BuildingSerializer(serializers.ModelSerializer):
 class BuildingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building
-        fields = "__all__"
-
-
-class SceneDeviceStatePostSerializer(serializers.Serializer):
-    scene_id = serializers.IntegerField(required=False)
-    device_id = serializers.IntegerField()
-    state = serializers.BooleanField()
-
-
-class SceneDeviceStateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SceneDeviceState
         fields = "__all__"
