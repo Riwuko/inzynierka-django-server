@@ -1,24 +1,26 @@
-import json
+import distutils
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
+from django.db import transaction
 from django.shortcuts import get_object_or_404
+from rest_framework import mixins, views
 
 from devices.models import Building, Device, MeasuringDevice, Measurement, Room, Scene, SceneDeviceState
 from devices.api.serializers import (
     BuildingSerializer,
     BuildingListSerializer,
     DeviceSerializer,
+    DeviceStateUpdateSerializer,
     MeasurementSerializer,
     MeasuringDeviceSerializer,
     RoomSerializer,
     RoomListSerializer,
     SceneSerializer,
     SceneListSerializer,
-    SceneDeviceStateSerializer,
-    SceneDeviceStatePostSerializer,
+    ScenePostSerializer,
 )
 
 
@@ -39,12 +41,26 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
         return self.queryset.filter(user=self.request.user)
 
 
-class DeviceViewSet(viewsets.ReadOnlyModelViewSet):
+class DeviceViewSet(
+    mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
 
     def get_queryset(self):
         return self.queryset.filter(room__building__user=self.request.user)
+
+    def patch(self, request, *args, **kwargs):
+        device = self.get_object()
+        serializer = DeviceStateUpdateSerializer(data=request.data)
+
+        if serializer.is_valid(raise_exception=True):
+            device.state = serializer.data.get("state")
+            device.save()
+            device_serializer = self.get_serializer(device)
+            return Response(data=device_serializer.data, status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class MeasuringDeviceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -91,10 +107,17 @@ class RoomViewSet(viewsets.ReadOnlyModelViewSet):
         return self.serializer_class
 
 
-class SceneViewSet(viewsets.ReadOnlyModelViewSet):
+class SceneViewSet(
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Scene.objects.all()
     serializer_class = SceneSerializer
     list_serializer_class = SceneListSerializer
+    post_serializer_class = ScenePostSerializer
 
     def get_queryset(self):
         return self.queryset.filter(building__user=self.request.user)
@@ -102,28 +125,54 @@ class SceneViewSet(viewsets.ReadOnlyModelViewSet):
     def get_serializer_class(self):
         if self.action == "list":
             return self.list_serializer_class
+        if self.action == "create":
+            return self.post_serializer_class
         return self.serializer_class
 
+    def _get_devices_for_update(self, scene):
+        configurations = SceneDeviceState.objects.filter(scene__id=scene.id)
+        for configuration in configurations:
+            configuration.device.state = configuration.state
+        return [device.device for device in configurations]
 
-class SceneDevicesView(generics.ListCreateAPIView):
-    queryset = SceneDeviceState.objects.all()
-    serializer_class = SceneDeviceStateSerializer
+    def update(self, request, *args, **kwargs):
+        """Custom patch method - takes scene id and changes devices states"""
+        scene = self.get_object()
+        if scene is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    def get_queryset(self):
-        return self.queryset.filter(scene__pk=self.kwargs["pk"], scene__building__user=self.request.user)
+        scene.is_active = request.data.get("is_active") == "True"
+        scene.save()
+        scene_serializer = self.get_serializer(scene)
 
-    def post(self, request, *args, **kwargs):
-        scene = get_object_or_404(Scene, id=self.kwargs.get("pk"))
-        serializer = SceneDeviceStatePostSerializer(data=request.data.get("devices"), many=True)
-
-        if serializer.is_valid(raise_exception=True):
-            for device in serializer.data:
-                device["scene"] = scene
-                device["device"] = get_object_or_404(Device, id=device["device_id"])
-
-            SceneDeviceState.objects.bulk_create(
-                [SceneDeviceState(**device) for device in serializer.data], ignore_conflicts=True
-            )
+        if not scene.is_active:
             return Response(status=status.HTTP_200_OK)
 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        devices = self._get_devices_for_update(scene)
+        Device.objects.bulk_update(devices, fields=("state",))
+        device_serializer = DeviceSerializer(devices, many=True)
+        return Response(data=device_serializer.data, status=status.HTTP_200_OK)
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        """Custom post method - takes scene id and devices ids and states for creating new Scene object and SceneDeviceState object"""
+        scene_serializer = self.serializer_class(data=request.data.get("scene"))
+        if not scene_serializer.is_valid(raise_exception=True):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        scene = scene_serializer.save()
+        devices = request.data.get("devices")
+
+        id_list = [device["device_id"] for device in devices]
+        device_objects = Device.objects.filter(id__in=id_list)
+        scene_device_states = [
+            {"device": device_objects.get(id=device["device_id"]), "state": device["state"], "scene": scene}
+            for device in devices
+        ]
+
+        SceneDeviceState.objects.bulk_create(
+            [SceneDeviceState(**device) for device in scene_device_states],
+            ignore_conflicts=True,
+        )
+
+        return Response(status=status.HTTP_200_OK)
