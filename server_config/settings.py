@@ -13,6 +13,7 @@ from celery.schedules import crontab
 from pathlib import Path
 import os
 import datetime
+import django_heroku
 import environ
 import dj_database_url
 
@@ -207,3 +208,4 @@ CELERY_BEAT_SCHEDULE = {
     #     "schedule": crontab(),  # co minutę
     # },
 }
+django_heroku.settings(locals())
