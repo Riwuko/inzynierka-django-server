@@ -48,11 +48,13 @@ class Device(models.Model):
 
 
 class Scene(models.Model):
-    name = models.CharField(max_length=100, null=False)
+    name = models.CharField(max_length=100, null=False, unique=True)
     building = models.ForeignKey(
         Building, related_name="building_scenes", null=False, on_delete=models.CASCADE
     )
     icon = models.CharField(max_length=300, null=True, blank=True)
+    is_active = models.BooleanField(default=False)
+    modified_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Scene: {str(self.id)} | name: {self.name}"
