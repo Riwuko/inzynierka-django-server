@@ -13,6 +13,6 @@ django-celery-beat
 celery>=5.0.0
 redis
 pillow
-gunicorn==19.7.1
-Markdown==2.6.9
+gunicorn
+Markdown
 dj-database-url
