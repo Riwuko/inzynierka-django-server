@@ -198,9 +198,9 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_IMPORTS = ["devices.tasks"]
 
 CELERY_BEAT_SCHEDULE = {
-    "check_temperature": {
-        "task": "devices.tasks.check_temperature",
-        # "schedule": crontab(minute=0, hour="*/2"),  # co 2 godziny
-        "schedule": crontab(),  # co minutę
-    },
+    # "check_temperature": {
+    #     "task": "devices.tasks.check_temperature",
+    #     # "schedule": crontab(minute=0, hour="*/2"),  # co 2 godziny
+    #     "schedule": crontab(),  # co minutę
+    # },
 }
