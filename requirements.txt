@@ -16,5 +16,4 @@ pillow
 gunicorn
 Markdown
 dj-database-url
-django-heroku
 whitenoise==3.3.1
