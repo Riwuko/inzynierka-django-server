@@ -13,7 +13,6 @@ from celery.schedules import crontab
 from pathlib import Path
 import os
 import datetime
-import django_heroku
 import environ
 import dj_database_url
 
@@ -57,7 +56,8 @@ AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.security.SecurityMiddleware",
+    # 'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -208,4 +208,3 @@ CELERY_BEAT_SCHEDULE = {
     #     "schedule": crontab(),  # co minutę
     # },
 }
-django_heroku.settings(locals())
