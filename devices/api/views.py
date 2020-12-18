@@ -14,6 +14,7 @@ from devices.api.serializers import (
     BuildingListSerializer,
     DeviceSerializer,
     DeviceStateUpdateSerializer,
+    IsActiveSerializer,
     MeasurementSerializer,
     MeasuringDeviceSerializer,
     RoomSerializer,
@@ -21,6 +22,7 @@ from devices.api.serializers import (
     SceneSerializer,
     SceneListSerializer,
     ScenePostSerializer,
+    SceneDeviceStateSerializer,
 )
 
 
@@ -112,6 +114,7 @@ class SceneViewSet(
     mixins.UpdateModelMixin,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = Scene.objects.all()
@@ -139,19 +142,23 @@ class SceneViewSet(
         """Custom patch method - takes scene id and changes devices states"""
         scene = self.get_object()
         if scene is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-        scene.is_active = request.data.get("is_active") == "True"
+        is_active_serializer = IsActiveSerializer(data=request.data)
+        if not is_active_serializer.is_valid(raise_exception=True):
+            return Response(data=request.data, status=status.HTTP_400_BAD_REQUEST)
+
+        scene.is_active = is_active_serializer.data.get("is_active",False)
         scene.save()
-        scene_serializer = self.get_serializer(scene)
+        scene_serializer = self.serializer_class(scene)
 
         if not scene.is_active:
-            return Response(status=status.HTTP_200_OK)
+            return Response(data=scene_serializer.data,status=status.HTTP_200_OK)
 
         devices = self._get_devices_for_update(scene)
         Device.objects.bulk_update(devices, fields=("state",))
-        device_serializer = DeviceSerializer(devices, many=True)
-        return Response(data=device_serializer.data, status=status.HTTP_200_OK)
+
+        return Response(data=scene_serializer.data, status=status.HTTP_200_OK)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -175,4 +182,4 @@ class SceneViewSet(
             ignore_conflicts=True,
         )
 
-        return Response(status=status.HTTP_200_OK)
+        return Response(data=scene_serializer.data, status=status.HTTP_200_OK)

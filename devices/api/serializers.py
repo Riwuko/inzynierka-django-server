@@ -79,3 +79,7 @@ class BuildingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building
         fields = "__all__"
+
+
+class IsActiveSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
