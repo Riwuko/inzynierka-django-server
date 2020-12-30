@@ -198,12 +198,16 @@ CELERY_ACCEPT_CONTENT = ["application/json"]
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
-CELERY_IMPORTS = ["devices.tasks"]
+
 
 CELERY_BEAT_SCHEDULE = {
-    # "check_temperature": {
-    #     "task": "devices.tasks.check_temperature",
-    #     # "schedule": crontab(minute=0, hour="*/2"),  # co 2 godziny
-    #     "schedule": crontab(),  # co minutę
-    # },
+    "check_temperature": {
+        "task": "devices.tasks.check_temperature",
+        "schedule": crontab(minute=0, hour="*/5"),  # co 5 godzin
+        # "schedule": crontab(),  # co minutę
+    },
+    "move_daily_measurement_to_measurement": {
+        "task": "devices.tasks.move_daily_measurement_to_measurement",
+        "schedule": crontab(minute=59, hour=23),
+    },
 }

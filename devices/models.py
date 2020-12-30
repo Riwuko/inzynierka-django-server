@@ -5,7 +5,9 @@ from users.models import User
 
 class Building(models.Model):
     name = models.CharField(max_length=100, null=True)
-    user = models.ForeignKey(User, related_name="user_buildings", null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(
+        User, related_name="user_buildings", null=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return f"Building: {str(self.id)} | name: {self.name}"
@@ -41,7 +43,9 @@ class Device(models.Model):
         null=True,
         on_delete=models.SET_NULL,
     )
-    room = models.ForeignKey(Room, related_name="room_devices", null=True, on_delete=models.SET_NULL)
+    room = models.ForeignKey(
+        Room, related_name="room_devices", null=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return f"Device: {str(self.id)} | name: {self.name}"
@@ -80,9 +84,20 @@ class SceneDeviceState(models.Model):
 
 
 class Measurement(models.Model):
-    measure_date = models.DateField(auto_now=True, null=False)
-    measure_value = models.DecimalField(max_digits=10, decimal_places=3, null=False)
-    measuring_device = models.OneToOneField(MeasuringDevice, null=True, on_delete=models.CASCADE)
+    measure_date = models.DateTimeField(auto_now=True, null=False)
+    measure_value = models.DecimalField(max_digits=10, decimal_places=3, null=True)
+    measuring_device = models.ForeignKey(
+        MeasuringDevice, on_delete=models.CASCADE, related_name="device_measurement"
+    )
 
     def __str__(self):
         return f"Measurement: {str(self.id)} | measuring device: {self.measuring_device.name} | date: {self.measure_date}"
+
+
+class DailyMeasurement(models.Model):
+    measure_date = models.DateTimeField(auto_now=True, null=False)
+    measure_value = models.DecimalField(max_digits=10, decimal_places=3, null=True)
+    measuring_device = models.ForeignKey(MeasuringDevice, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Daily Measurement: {str(self.id)} | measuring device: {self.measuring_device.name} | date: {self.measure_date}"
