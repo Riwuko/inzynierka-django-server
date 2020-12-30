@@ -8,10 +8,20 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, views
 
-from devices.models import Building, Device, MeasuringDevice, Measurement, Room, Scene, SceneDeviceState
+from devices.models import (
+    Building,
+    DailyMeasurement,
+    Device,
+    MeasuringDevice,
+    Measurement,
+    Room,
+    Scene,
+    SceneDeviceState,
+)
 from devices.api.serializers import (
     BuildingSerializer,
     BuildingListSerializer,
+    DailyMeasurementSerializer,
     DeviceSerializer,
     DeviceStateUpdateSerializer,
     IsActiveSerializer,
@@ -44,7 +54,10 @@ class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class DeviceViewSet(
-    mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
 ):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
@@ -75,10 +88,11 @@ class MeasuringDeviceViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         measuring_device = self.get_object()
         try:
-            measurement = Measurement.objects.last()
+            measurement = DailyMeasurement.objects.filter(measuring_device=measuring_device).last()
             response_data = {
                 **self.serializer_class(measuring_device).data,
-                **MeasurementSerializer(measurement).data,
+                "last_measure_date": MeasurementSerializer(measurement).data.get("measure_date"),
+                "last_measure_value": MeasurementSerializer(measurement).data.get("measure_value"),
             }
 
         except Measurement.DoesNotExist:
@@ -87,9 +101,33 @@ class MeasuringDeviceViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
+class MeasuringDeviceMeasurements(generics.ListAPIView):
+    queryset = Measurement.objects.all()
+    serializer_class = MeasurementSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(measuring_device__pk=self.kwargs["pk"])
+
+
+class MeasuringDeviceDailyMeasurements(generics.ListAPIView):
+    queryset = DailyMeasurement.objects.all()
+    serializer_class = DailyMeasurementSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(measuring_device__pk=self.kwargs["pk"])
+
+
 class MeasurementViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Measurement.objects.all()
     serializer_class = MeasurementSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(measuring_device__room__building__user=self.request.user)
+
+
+class DailyMeasurementViewSet(viewsets.ModelViewSet):
+    queryset = DailyMeasurement.objects.all()
+    serializer_class = DailyMeasurementSerializer
 
     def get_queryset(self):
         return self.queryset.filter(measuring_device__room__building__user=self.request.user)
@@ -148,12 +186,12 @@ class SceneViewSet(
         if not is_active_serializer.is_valid(raise_exception=True):
             return Response(data=request.data, status=status.HTTP_400_BAD_REQUEST)
 
-        scene.is_active = is_active_serializer.data.get("is_active",False)
+        scene.is_active = is_active_serializer.data.get("is_active", False)
         scene.save()
         scene_serializer = self.serializer_class(scene)
 
         if not scene.is_active:
-            return Response(data=scene_serializer.data,status=status.HTTP_200_OK)
+            return Response(data=scene_serializer.data, status=status.HTTP_200_OK)
 
         devices = self._get_devices_for_update(scene)
         Device.objects.bulk_update(devices, fields=("state",))
@@ -173,7 +211,11 @@ class SceneViewSet(
         id_list = [device["device_id"] for device in devices]
         device_objects = Device.objects.filter(id__in=id_list)
         scene_device_states = [
-            {"device": device_objects.get(id=device["device_id"]), "state": device["state"], "scene": scene}
+            {
+                "device": device_objects.get(id=device["device_id"]),
+                "state": device["state"],
+                "scene": scene,
+            }
             for device in devices
         ]
 
