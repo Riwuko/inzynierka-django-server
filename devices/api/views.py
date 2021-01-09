@@ -10,6 +10,7 @@ from rest_framework import mixins, views
 
 from devices.models import (
     Building,
+    ControlParameter,
     DailyMeasurement,
     Device,
     MeasuringDevice,
@@ -21,6 +22,7 @@ from devices.models import (
 from devices.api.serializers import (
     BuildingSerializer,
     BuildingListSerializer,
+    ControlParameterSerializer,
     DailyMeasurementSerializer,
     DeviceSerializer,
     DeviceStateUpdateSerializer,
@@ -225,3 +227,22 @@ class SceneViewSet(
         )
 
         return Response(data=scene_serializer.data, status=status.HTTP_200_OK)
+
+class ControlParameterViewSet(
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = ControlParameter.objects.all()
+    serializer_class = ControlParameterSerializer
+
+
+class RoomControlParameter(generics.ListAPIView):
+    queryset = ControlParameter.objects.all()
+    serializer_class = ControlParameterSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(room__pk=self.kwargs["pk"])
