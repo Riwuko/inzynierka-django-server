@@ -23,8 +23,11 @@ optional: `docker-compose run web python manage.py createsuperuser` for admin us
 User can see only his building and it's parts (rooms, scenes, devices etc) <br>
 `/api/buildings/` all user's buildings list view {GET} <br>
 `/api/buildings/<id>/` selected building detail view (with building's rooms and scenes) {GET} <br>
+`/api/control-parameters/` control parameters view {GET, POST} <br>
+`/api/control-parameters/<id>/` control parameters detail view {GET, POST, PUT, PATCH} <br>
 `/api/rooms/` all user's building's rooms list view {GET} <br>
 `/api/rooms/<id>/` selected room detail view (with room's devices and measuring devices) {GET} <br>
+`/api/rooms/<id>/control-parameters/` selected room control parameters list {GET} <br>
 `/api/scenes/` all user's building's scenes list view {GET, POST, DELETE} <br>
 `/api/scenes/<id>/` selected scene detail view (with scene's devices) {GET, PATCH} <br>
 `/api/devices/` all user's building's devices list view {GET, POST} <br>
