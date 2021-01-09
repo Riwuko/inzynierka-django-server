@@ -1,4 +1,4 @@
-from devices.models import Building, DailyMeasurement, Device, MeasuringDevice, Measurement, Room, Scene, SceneDeviceState
+from devices.models import Building, ControlParameter, DailyMeasurement, Device, MeasuringDevice, Measurement, Room, Scene, SceneDeviceState
 from rest_framework import serializers
 
 
@@ -11,6 +11,10 @@ class DeviceSerializer(serializers.ModelSerializer):
 class DeviceStateUpdateSerializer(serializers.Serializer):
     state = serializers.BooleanField()
 
+class ControlParameterSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = ControlParameter
+        fields = "__all__"
 
 class MeasurementSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,4 +1,4 @@
-Django>=2.2,<3.0
+Django==2.2.17
 djoser
 jsonschema>=3.2,<3.3
 psycopg2>=2.8,<2.9
@@ -9,8 +9,8 @@ django-environ
 django-cors-headers
 graphene-django
 django-graphql-jwt
-django-celery-beat
-celery>=5.0.0
+django-celery-beat==2.1.0
+celery==5.0.5
 redis
 pillow
 gunicorn

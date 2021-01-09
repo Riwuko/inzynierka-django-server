@@ -37,6 +37,7 @@ class MeasuringDevice(models.Model):
 class Device(models.Model):
     name = models.CharField(max_length=100, null=False)
     state = models.BooleanField(null=False, default=False)
+    state_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
     measuring_device = models.ForeignKey(
         MeasuringDevice,
         related_name="measuring_device_devices",
@@ -69,6 +70,7 @@ class SceneDeviceState(models.Model):
         Device, related_name="device_scenes_states", null=False, on_delete=models.CASCADE
     )
     state = models.BooleanField(null=False, default=False)
+    state_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
     scene = models.ForeignKey(
         Scene, related_name="scene_devices_states", null=False, on_delete=models.CASCADE
     )
@@ -101,3 +103,17 @@ class DailyMeasurement(models.Model):
 
     def __str__(self):
         return f"Daily Measurement: {str(self.id)} | measuring device: {self.measuring_device.name} | date: {self.measure_date}"
+
+class ControlParameter(models.Model):
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="room_control_parameters")
+    parameter = models.CharField(max_length=500)
+    parameter_value = models.DecimalField(max_digits=10, decimal_places=3)
+
+    class Meta:
+        unique_together = (
+            "room",
+            "parameter",
+        )
+
+    def __str__(self):
+        return f"{self.room.name} : {self.parameter}"

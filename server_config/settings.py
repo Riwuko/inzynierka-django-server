@@ -192,8 +192,8 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
 )
 
-CELERY_BROKER_URL = "redis://redis:6379"
-CELERY_RESULT_BACKEND = "redis://redis:6379"
+CELERY_BROKER_URL = "redis://:p38de8079263b4906390caf480834458b64b92699a79851875db97d010182fcad@ec2-23-21-136-122.compute-1.amazonaws.com:19059"
+CELERY_RESULT_BACKEND = "redis://:p38de8079263b4906390caf480834458b64b92699a79851875db97d010182fcad@ec2-23-21-136-122.compute-1.amazonaws.com:19059"
 CELERY_ACCEPT_CONTENT = ["application/json"]
 
 CELERY_ACCEPT_CONTENT = ["json"]
@@ -208,6 +208,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "move_daily_measurement_to_measurement": {
         "task": "devices.tasks.move_daily_measurement_to_measurement",
-        "schedule": crontab(minute=59, hour=23),
+        # "schedule": crontab(minute=59, hour=23), #o 23.59 codziennie
+        "schedule": crontab(),  # co minutę
     },
 }
