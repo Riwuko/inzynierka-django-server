@@ -1,12 +1,16 @@
 import distutils
 from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
 from rest_framework import mixins, views
+from datetime import datetime, time
+
+from devices.tasks import move_daily_measurement_to_measurement
 
 from devices.models import (
     Building,
@@ -72,7 +76,8 @@ class DeviceViewSet(
         serializer = DeviceStateUpdateSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            device.state = serializer.data.get("state")
+            device.state = serializer.data.get("state", False)
+            device.state_value = serializer.data.get("state_value", None)
             device.save()
             device_serializer = self.get_serializer(device)
             return Response(data=device_serializer.data, status=status.HTTP_200_OK)
@@ -176,6 +181,7 @@ class SceneViewSet(
         configurations = SceneDeviceState.objects.filter(scene__id=scene.id)
         for configuration in configurations:
             configuration.device.state = configuration.state
+            configuration.device.state_value = configuration.state_value
         return [device.device for device in configurations]
 
     def update(self, request, *args, **kwargs):
@@ -196,7 +202,7 @@ class SceneViewSet(
             return Response(data=scene_serializer.data, status=status.HTTP_200_OK)
 
         devices = self._get_devices_for_update(scene)
-        Device.objects.bulk_update(devices, fields=("state",))
+        Device.objects.bulk_update(devices, fields=("state","state_value",))
 
         return Response(data=scene_serializer.data, status=status.HTTP_200_OK)
 
@@ -204,7 +210,7 @@ class SceneViewSet(
     def create(self, request, *args, **kwargs):
         """Custom post method - takes scene id and devices ids and states for creating new Scene object and SceneDeviceState object"""
         scene_serializer = self.serializer_class(data=request.data.get("scene"))
-        if not scene_serializer.is_valid(raise_exception=True):
+        if not scene_serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         scene = scene_serializer.save()
@@ -215,7 +221,8 @@ class SceneViewSet(
         scene_device_states = [
             {
                 "device": device_objects.get(id=device["device_id"]),
-                "state": device["state"],
+                "state": device.get("state", False),
+                "state_value": device.get("state_value", None),
                 "scene": scene,
             }
             for device in devices
@@ -246,3 +253,11 @@ class RoomControlParameter(generics.ListAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(room__pk=self.kwargs["pk"])
+
+@api_view(('GET',))
+@staff_member_required
+def reset_daily_measurements(request, **kwargs):
+    # if not time(23, 00) <= datetime.now().time() >= time(23, 59):
+    #     return Response(status=status.HTTP_403_FORBIDDEN)
+    move_daily_measurement_to_measurement()
+    return Response(status=status.HTTP_200_OK)

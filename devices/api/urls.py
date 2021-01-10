@@ -13,6 +13,7 @@ from devices.api.views import (
     RoomViewSet,
     RoomControlParameter,
     SceneViewSet,
+    reset_daily_measurements,
 )
 
 app_name = "devices"
@@ -44,4 +45,5 @@ urlpatterns = [
         RoomControlParameter.as_view(),
         name="room-control-parameters",
     ),
+    path("daily-measurements/<int:pk>/reset/", reset_daily_measurements, name="reset-daily-measurements")
 ]

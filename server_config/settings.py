@@ -208,7 +208,6 @@ CELERY_BEAT_SCHEDULE = {
     },
     "move_daily_measurement_to_measurement": {
         "task": "devices.tasks.move_daily_measurement_to_measurement",
-        # "schedule": crontab(minute=59, hour=23), #o 23.59 codziennie
-        "schedule": crontab(),  # co minutę
+        "schedule": crontab(minute=59, hour=23), #o 23.59 codziennie
     },
 }

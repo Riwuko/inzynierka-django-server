@@ -10,6 +10,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
 class DeviceStateUpdateSerializer(serializers.Serializer):
     state = serializers.BooleanField()
+    state_value = serializers.DecimalField(max_digits=10, decimal_places=2)
 
 class ControlParameterSerializer(serializers.ModelSerializer):
     class Meta: 
@@ -51,7 +52,7 @@ class RoomListSerializer(serializers.ModelSerializer):
 class SceneDeviceStateSerializer(serializers.Serializer):
     device_id = serializers.IntegerField()
     state = serializers.BooleanField()
-
+    state_value = serializers.DecimalField(max_digits=10, decimal_places=2)
 
 class SceneSerializer(serializers.ModelSerializer):
     scene_devices_states = SceneDeviceStateSerializer(many=True, read_only=True)
