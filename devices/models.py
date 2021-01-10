@@ -37,7 +37,7 @@ class MeasuringDevice(models.Model):
 class Device(models.Model):
     name = models.CharField(max_length=100, null=False)
     state = models.BooleanField(null=False, default=False)
-    state_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
+    state_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=None)
     measuring_device = models.ForeignKey(
         MeasuringDevice,
         related_name="measuring_device_devices",
@@ -70,7 +70,7 @@ class SceneDeviceState(models.Model):
         Device, related_name="device_scenes_states", null=False, on_delete=models.CASCADE
     )
     state = models.BooleanField(null=False, default=False)
-    state_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, default=None)
+    state_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=None)
     scene = models.ForeignKey(
         Scene, related_name="scene_devices_states", null=False, on_delete=models.CASCADE
     )

@@ -25,7 +25,7 @@ def move_daily_measurement_to_measurement():
             timeday_measure_values = [
                 measurement.measure_value
                 for measurement in DailyMeasurement.objects.filter(
-                    Q(Q(measure_date__hour__lt=hours[0]) | Q(measure_date__hour__gte=hours[1]))
+                    Q(measure_date__hour__range=hours[0:2])
                     & Q(measuring_device=device)
                 )
             ]
