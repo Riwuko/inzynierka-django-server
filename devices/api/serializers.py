@@ -1,4 +1,4 @@
-from devices.models import Building, Device, MeasuringDevice, Measurement, Room, Scene
+from devices.models import Building, ControlParameter, DailyMeasurement, Device, MeasuringDevice, Measurement, Room, Scene, SceneDeviceState
 from rest_framework import serializers
 
 
@@ -8,15 +8,28 @@ class DeviceSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class MeasuringDeviceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MeasuringDevice
-        fields = "__all__"
+class DeviceStateUpdateSerializer(serializers.Serializer):
+    state = serializers.BooleanField()
+    state_value = serializers.DecimalField(max_digits=10, decimal_places=2)
 
+class ControlParameterSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = ControlParameter
+        fields = "__all__"
 
 class MeasurementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Measurement
+        fields = "__all__"
+
+class DailyMeasurementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyMeasurement
+        fields = "__all__"
+
+class MeasuringDeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MeasuringDevice
         fields = "__all__"
 
 
@@ -36,19 +49,29 @@ class RoomListSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class SceneDeviceStateSerializer(serializers.Serializer):
+    device_id = serializers.IntegerField()
+    state = serializers.BooleanField()
+    state_value = serializers.DecimalField(max_digits=10, decimal_places=2)
+
 class SceneSerializer(serializers.ModelSerializer):
-    scene_devices = DeviceSerializer(many=True, read_only=True)
+    scene_devices_states = SceneDeviceStateSerializer(many=True, read_only=True)
 
     class Meta:
         model = Scene
         fields = "__all__"
-        extra_fields = ["scene_devices"]
+        extra_fields = ["scene_devices_states"]
 
 
 class SceneListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scene
         fields = "__all__"
+
+
+class ScenePostSerializer(serializers.Serializer):
+    scene = SceneSerializer
+    devices = SceneDeviceStateSerializer(many=True)
 
 
 class BuildingSerializer(serializers.ModelSerializer):
@@ -65,3 +88,7 @@ class BuildingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Building
         fields = "__all__"
+
+
+class IsActiveSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()

@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 import datetime
 import environ
+import dj_database_url
 
 env = environ.Env()
 
@@ -31,7 +32,7 @@ ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(",")
 CROSS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_ALL_ORIGINS = True
-
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
@@ -55,10 +56,10 @@ AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.security.SecurityMiddleware",
+    # 'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -100,6 +101,8 @@ DATABASES = {
     }
 }
 
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES["default"].update(db_from_env)
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -189,18 +192,22 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
 )
 
-CELERY_BROKER_URL = "redis://redis:6379"
-CELERY_RESULT_BACKEND = "redis://redis:6379"
+CELERY_BROKER_URL = "redis://:p38de8079263b4906390caf480834458b64b92699a79851875db97d010182fcad@ec2-23-21-136-122.compute-1.amazonaws.com:19059"
+CELERY_RESULT_BACKEND = "redis://:p38de8079263b4906390caf480834458b64b92699a79851875db97d010182fcad@ec2-23-21-136-122.compute-1.amazonaws.com:19059"
 CELERY_ACCEPT_CONTENT = ["application/json"]
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
-CELERY_IMPORTS = ["devices.tasks"]
+
 
 CELERY_BEAT_SCHEDULE = {
     "check_temperature": {
         "task": "devices.tasks.check_temperature",
-        # "schedule": crontab(minute=0, hour="*/2"),  # co 2 godziny
-        "schedule": crontab(),  # co minutę
+        "schedule": crontab(minute=0, hour="*/5"),  # co 5 godzin
+        # "schedule": crontab(),  # co minutę
+    },
+    "move_daily_measurement_to_measurement": {
+        "task": "devices.tasks.move_daily_measurement_to_measurement",
+        "schedule": crontab(minute=59, hour=23), #o 23.59 codziennie
     },
 }
