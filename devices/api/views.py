@@ -140,7 +140,12 @@ class DailyMeasurementViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(measuring_device__room__building__user=self.request.user)
 
 
-class RoomViewSet(viewsets.ReadOnlyModelViewSet):
+class RoomViewSet(
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,):
+    
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
     list_serializer_class = RoomListSerializer
@@ -257,7 +262,7 @@ class RoomControlParameter(generics.ListAPIView):
 @api_view(('GET',))
 @staff_member_required
 def reset_daily_measurements(request, **kwargs):
-    # if not time(23, 00) <= datetime.now().time() >= time(23, 59):
-    #     return Response(status=status.HTTP_403_FORBIDDEN)
+    if not time(23, 00) <= datetime.now().time() >= time(23, 59):
+        return Response(status=status.HTTP_403_FORBIDDEN)
     move_daily_measurement_to_measurement()
     return Response(status=status.HTTP_200_OK)
