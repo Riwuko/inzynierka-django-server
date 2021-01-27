@@ -18,7 +18,7 @@ class Room(models.Model):
     building = models.ForeignKey(
         Building, related_name="building_rooms", null=False, on_delete=models.CASCADE
     )
-    icon = models.CharField(max_length=300, null=True, blank=True)
+    icon = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"Room: {str(self.id)} | name: {self.name}"
