@@ -9,6 +9,15 @@ class LightController:
         self.bulb_power = 0
         self.bulb.set_brightness(self.bulb_power)
 
+    def turnOn(self):
+        self.bulb.turn_on()
+
+    def turnOff(self):
+        self.bulb.turn_off()
+
+    def setBrightness(self, brightness):
+        self.bulb.set_brightness(brightness)
+
     def control_light(self, given_intensity):
         print(readLight())
         print(given_intensity)
